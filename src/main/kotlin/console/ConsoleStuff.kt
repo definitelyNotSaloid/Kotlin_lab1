@@ -16,7 +16,7 @@ class ConsoleHandler {
                         "How about checking internet connection?\n" +
                         "Or try again. It will work this time, i promise!\n\n"
             )
-        else if (results!!.links.isEmpty())
+        else if (results!!.pageIDs.isEmpty())
             println("Nothing found, or so it seems...\n" +
                     "Ask your parents about it!\n" +
                     "Or try and search for something wikipedia knows about\n\n")
@@ -37,7 +37,7 @@ class ConsoleHandler {
                 println("Congrats on failing a simple task of entering an integer! Try again. And try not to fail this time")
                 choice = readln().toIntOrNull()
                 if (choice == null) {
-                    println("You want to just see me making an extent comment about your miserable skills of following a simple instructions, am i right?\n" +
+                    println("You want to just see me making an extent comment about your miserable skills of following simple instructions, am i right?\n" +
                             "Im sorry to disappoint you, my \"special\" friend, i shall not humiliate you any further.\n" +
                             "You know, ill just open the first page for you. No thanks needed, anything for my disabled buddy!\n")
                     results!!.openInBrowser(0)
@@ -48,7 +48,7 @@ class ConsoleHandler {
             if (choice !in 0..resultsCount) {
                 print("Look, i know math can be hard, especially comparing integers.\n" +
                         "But try your best and enter a number that is NOT negative (it has no minus (this ---> - <---- thing) before digits)\n" +
-                        "and is EQUALS OR LESS then $resultsCount. Its when a number goes before other. \n" +
+                        "and is EQUAL OR LESS then $resultsCount. Its when a number goes before other. \n" +
                         "Like, if cookie's price is equal or less then your pocket money, then you can afford them.\n" +
                         "So... DO YOUR BEST NOW: ")
                 choice = readln().toIntOrNull()
@@ -59,7 +59,7 @@ class ConsoleHandler {
                     results!!.openInBrowser(0)
                     return
                 }
-                if (choice !in 1..resultsCount) {
+                if (choice !in 0..resultsCount) {
                     println("Look, i can understand that guy who cant enter a number. He is a special one. But you can!\n" +
                             "So what is your problem? You could have just entered 0 (this funny circle is called zero btw) and be good, BUT NOOOOO.\n" +
                             "Stay here for a while. Think about your life choices that led you to being unable to enter a number in given range.\n")
@@ -68,13 +68,20 @@ class ConsoleHandler {
                 }
             }
 
-            if (choice==0) {
-                println("If you say so...")
-                return
+
+            while (choice in 1..resultsCount) {
+                println("Opening...")
+                results!!.openInBrowser(choice!! - 1)
+                print("Enter another page index or 0 to exit: ")
+                choice = readln().toIntOrNull()
             }
 
-            println("Opening...")
-            results!!.openInBrowser(choice-1)
+            if (choice==0)
+                println("If you say so...")
+            else
+                println("Invalid page. Returning to search input")
+
+            return
         }
     }
 }
