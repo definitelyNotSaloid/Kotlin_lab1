@@ -68,7 +68,7 @@ class ConsoleHandler {
                 }
             }
 
-
+            //
             while (choice in 1..resultsCount) {
                 println("Opening...")
                 results!!.openInBrowser(choice!! - 1)

@@ -27,6 +27,7 @@ class SearchResults(
 
 }
 
+//
 // sends http request and returns results (null if something goes wrong, e.g. no connection)
 // request = your normal search bar request string
 fun sendWikiSearchRequest(request: String) : SearchResults? {
