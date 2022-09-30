@@ -1,6 +1,7 @@
-package console
+package lab1.console
 
-import web.SearchResults
+import lab1.web.SearchResults
+import lab1.web.sendWikiSearchRequest
 import java.lang.Thread.sleep
 
 // basically a controller+view
@@ -9,7 +10,7 @@ class ConsoleHandler {
     private var results : SearchResults? = null
     fun initSearch() {
         print("Enter your search request right here ----> ")
-        results = web.sendWikiSearchRequest(readln())
+        results = sendWikiSearchRequest(readln())
         if (results==null)
             println(
                 "Invalid response from server or no response at all.\n" +

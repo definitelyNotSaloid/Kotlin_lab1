@@ -1,4 +1,4 @@
-import console.ConsoleHandler
+import lab1.console.ConsoleHandler
 
 fun main(args: Array<String>) {
     val consoleHandler = ConsoleHandler()
