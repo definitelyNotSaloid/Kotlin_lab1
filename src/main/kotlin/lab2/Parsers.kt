@@ -6,14 +6,20 @@ import java.io.File
 
 
 @Suppress("ConvertSecondaryConstructorToPrimary")
-data class HouseData constructor(
-    @field:JacksonXmlProperty(isAttribute = true) var city : String,
-    @field:JacksonXmlProperty(isAttribute = true) var street : String,
-    @field:JacksonXmlProperty(isAttribute = true) var house : Int,
-    @field:JacksonXmlProperty(isAttribute = true, localName = "floor") var floors: Int) {
+class HouseData () {
 
-    constructor() : this("","", -1, -1) {
+    constructor(city : String, street : String, house : Int, floors: Int) : this() {
+        this.city = city
+        this.street = street
+        this.house = house
+        this.floors = floors
+
     }
+
+    @field:JacksonXmlProperty(isAttribute = true) var city : String = ""
+    @field:JacksonXmlProperty(isAttribute = true) var street : String = ""
+    @field:JacksonXmlProperty(isAttribute = true) var house : Int = -1
+    @field:JacksonXmlProperty(isAttribute = true, localName = "floor") var floors: Int = -1
 
     fun prettyString() : String {
         return "$street, $house,\n$city\nTotal floors: $floors\n"
@@ -43,7 +49,7 @@ class XmlHouseParser(filePath : String) : Parser(filePath) {
 }
 
 class CsvHouseParser(filePath: String) : Parser(filePath) {
-    private val houseDataRegex : Regex = Regex("\"([^\"]+)\";\"([^\"]+)\";(\\d+);(\\d+)")     // "city";"street";house_int;floors_int
+    private val houseDataRegex : Regex = Regex("\"([^\"]+)\";\"([^\"]+)\";(\\d+);(\\d+)")     // "city";"street";house_int;floors_int/
 
     override fun getAllLazy() : Sequence<HouseData> {
         return File(filePath).bufferedReader().lineSequence()

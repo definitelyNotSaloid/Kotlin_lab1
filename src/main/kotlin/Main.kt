@@ -30,7 +30,7 @@ private suspend fun parseFile(
 
                 val duplicateCount =
                     duplicatesList.getOrPut(house) {
-                        GenericBox(1)                       // we start with 1 because if we found house hash in list
+                        GenericBox(1)                       // we start with 1 because if we found house hash in list/
                         // than it means there already was 1 entry.
                     }
                 duplicateCount.value++
