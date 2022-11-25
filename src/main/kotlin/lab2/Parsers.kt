@@ -6,20 +6,15 @@ import java.io.File
 
 
 @Suppress("ConvertSecondaryConstructorToPrimary")
-class HouseData () {
+data class HouseData (
+    @field:JacksonXmlProperty(isAttribute = true) var city : String = "",
+    @field:JacksonXmlProperty(isAttribute = true) var street : String = "",
+    @field:JacksonXmlProperty(isAttribute = true) var house : Int = -1,
+    @field:JacksonXmlProperty(isAttribute = true, localName = "floor") var floors: Int = -1) {
 
-    constructor(city : String, street : String, house : Int, floors: Int) : this() {
-        this.city = city
-        this.street = street
-        this.house = house
-        this.floors = floors
+    constructor() : this("","",-1,-1) {
 
     }
-
-    @field:JacksonXmlProperty(isAttribute = true) var city : String = ""
-    @field:JacksonXmlProperty(isAttribute = true) var street : String = ""
-    @field:JacksonXmlProperty(isAttribute = true) var house : Int = -1
-    @field:JacksonXmlProperty(isAttribute = true, localName = "floor") var floors: Int = -1
 
     fun prettyString() : String {
         return "$street, $house,\n$city\nTotal floors: $floors\n"
