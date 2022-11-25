@@ -3,20 +3,22 @@ import lab2.HouseData
 import lab2.Parser
 import lab2.bicycles.*
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.*
-import java.lang.Thread.sleep
+import lab2.XmlHouseParser
 import kotlin.collections.HashSet
+
+private fun readYesOrNo() : Boolean {
+    val response = readln().lowercase(Locale.getDefault())
+    return (response=="yes" || response=="y")
+}
 
 private suspend fun parseFile(
     parser: Parser,
     housesWithNFloors : MutableList<Int>,
     duplicatesList : HashMap<HouseData, GenericBox<Int>>) : Unit = coroutineScope {
     async {
-        val hashesOfParsedHouses = HashSet<Int>()
-
+        val parsedHouses = HashSet<HouseData>()
         var i = 0
         parser.getAllLazy().forEach { house ->
 
@@ -24,7 +26,8 @@ private suspend fun parseFile(
                 housesWithNFloors[house.floors]++
 
             val houseHash = house.hashCode()
-            if (hashesOfParsedHouses.contains(houseHash)) {
+            if (parsedHouses.contains(house)) {
+
                 val duplicateCount =
                     duplicatesList.getOrPut(house) {
                         GenericBox(1)                       // we start with 1 because if we found house hash in list
@@ -32,7 +35,7 @@ private suspend fun parseFile(
                     }
                 duplicateCount.value++
             } else {
-                hashesOfParsedHouses.add(houseHash)
+                parsedHouses.add(house)
             }
 
             if (i%10000 == 0)
@@ -44,14 +47,19 @@ private suspend fun parseFile(
 }.await()
 
 fun main(args: Array<String>) {
-    val parser : Parser
-    parser = CsvHouseParser("address.csv")
-    val housesWithNFloors = arrayListOf(0,0,0,0,0,0)    // 1st value is "dummy". its easier when index 1 stands for 1 floor
+
+    println("Im reading cvs file by default. Do you want to parse xml instead? [Y/n]")
+    val parser : Parser = if (readYesOrNo())
+        XmlHouseParser("address.xml")
+    else
+        CsvHouseParser("address.csv")
+
+    val housesWithNFloors = arrayListOf(0,0,0,0,0,0)    // 1st value is "dummy". its easier when index 1 stands for 1st floor
 
     val duplicatesList = HashMap<HouseData, GenericBox<Int>>()
 
     runBlocking {
-        val job = launch {
+        launch {
             parseFile(parser, housesWithNFloors, duplicatesList)
         }
     }
@@ -64,8 +72,7 @@ fun main(args: Array<String>) {
     println()
     println("There are ${duplicatesList.count()} duplicated entries")
     println("Show them? [Y/n]")
-    val response = readln().lowercase(Locale.getDefault())
-    if (response=="yes" || response=="y") {
+    if (readYesOrNo()) {
         duplicatesList.forEach{
             println(it.key.prettyString())
             println("Entries: ${it.value.value}")

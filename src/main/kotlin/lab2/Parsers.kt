@@ -1,15 +1,19 @@
 package lab2
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import java.io.File
-import java.lang.Thread.yield
 
 
-
+@Suppress("ConvertSecondaryConstructorToPrimary")
 data class HouseData constructor(
-    val city : String,
-    val street : String,
-    val house : Int,
-    val floors: Int) {
+    @field:JacksonXmlProperty(isAttribute = true) var city : String,
+    @field:JacksonXmlProperty(isAttribute = true) var street : String,
+    @field:JacksonXmlProperty(isAttribute = true) var house : Int,
+    @field:JacksonXmlProperty(isAttribute = true, localName = "floor") var floors: Int) {
+
+    constructor() : this("","", -1, -1) {
+    }
 
     fun prettyString() : String {
         return "$street, $house,\n$city\nTotal floors: $floors\n"
@@ -23,8 +27,18 @@ abstract class Parser(protected val filePath: String) {
 }
 
 class XmlHouseParser(filePath : String) : Parser(filePath) {
+
     override fun getAllLazy() : Sequence<HouseData> {
-        TODO()
+        val xmlMapper = XmlMapper()
+        return File(filePath).bufferedReader().lineSequence()
+            .map {line ->
+                try {
+                    xmlMapper.readValue(line, HouseData::class.java)
+                }
+                catch (e: Exception) {
+                    null
+                }
+            }.filterNotNull()
     }
 }
 
