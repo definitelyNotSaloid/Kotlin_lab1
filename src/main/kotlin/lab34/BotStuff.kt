@@ -1,38 +1,23 @@
 package lab34
 
-import dev.inmo.tgbotapi.extensions.api.send.media.sendDocument
-import dev.inmo.tgbotapi.extensions.api.send.media.sendPhoto
 import dev.inmo.tgbotapi.extensions.api.send.reply
-import dev.inmo.tgbotapi.extensions.api.send.replyWithPhoto
 import dev.inmo.tgbotapi.extensions.api.telegramBot
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
 import dev.inmo.tgbotapi.extensions.behaviour_builder.buildBehaviourWithLongPolling
-import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitPhoto
 import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitText
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onCommand
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onCommandWithArgs
 import dev.inmo.tgbotapi.extensions.utils.types.buttons.replyKeyboard
-import dev.inmo.tgbotapi.requests.abstracts.asMultipartFile
 import dev.inmo.tgbotapi.requests.send.SendTextMessage
-import dev.inmo.tgbotapi.requests.send.media.SendPhoto
 import dev.inmo.tgbotapi.types.buttons.reply.simpleReplyButton
-import dev.inmo.tgbotapi.types.files.File
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
-import dev.inmo.tgbotapi.types.message.content.PhotoContent
 import dev.inmo.tgbotapi.types.message.content.TextContent
-import dev.inmo.tgbotapi.utils.buildEntities
-import dev.inmo.tgbotapi.utils.regular
 import dev.inmo.tgbotapi.utils.row
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import java.util.*
 
 import lab2.bicycles.*
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
+import java.sql.Connection
 
 private class ReplyBars {
     companion object {
@@ -113,7 +98,7 @@ private suspend fun BehaviourContext.getTags(
     return tags
 }
 
-suspend fun initBot(token: String){
+suspend fun initBot(connection: Connection, token: String){
     val bot = telegramBot(token)
 
     bot.buildBehaviourWithLongPolling {
@@ -127,7 +112,7 @@ suspend fun initBot(token: String){
             val allTagsBox = GenericBox<Boolean>(true)
             val tags = getTags(message, allTagsBox)
 
-            val res= searchMovies(genre, tags, allTagsBox.value)
+            val res= searchMovies(connection, genre, tags, allTagsBox.value)
 
             replyWithMovieList(res,message)
         }
@@ -146,18 +131,9 @@ suspend fun initBot(token: String){
 
             val nameRegex = Regex(sb.toString())
 
-            val res = searchMovies(nameRegex=nameRegex)
+            val res = searchMovies(connection, nameRegex=nameRegex)
             replyWithMovieList(res,message)
         }
-
-//        onCommand("debugPic") {
-//            val client = HttpClient.newBuilder().build()
-//            val request = HttpRequest.newBuilder().uri(URI.create("https://2ch.hk/news/src/14065281/16719909224440.png")).build()
-//
-//            val res = client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-//            val pic = res.join().body().toByteArray().asMultipartFile("res.png")
-//
-//        }
 
     }.join()
 

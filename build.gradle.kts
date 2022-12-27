@@ -18,6 +18,8 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.0")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.14.0")
     implementation("dev.inmo:tgbotapi:4.2.2")
+    implementation("com.microsoft.sqlserver:mssql-jdbc:11.2.2.jre11")
+    implementation("mysql:mysql-connector-java:8.0.15")
 }
 
 tasks.test {

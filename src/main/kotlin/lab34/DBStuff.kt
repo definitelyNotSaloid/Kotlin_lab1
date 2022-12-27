@@ -14,6 +14,8 @@ import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.sql.Connection
+import java.sql.DriverManager
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
@@ -28,6 +30,8 @@ data class MovieData(
 }
 
 fun searchMovies(
+    connection: Connection,
+
     genre: String="NO_genre",
     tags: List<String> = listOf(),
     includeAllTags: Boolean= false,
@@ -61,12 +65,33 @@ fun searchMovies(
         )
     )
 
+    if (genre!="NO_genre") {
+        val query = """
+        SELECT name, gerne, description, year FROM movie
+        WHERE gerne=$genre
+    """.trimIndent()
+        val res = connection.prepareStatement(query).executeQuery()
+
+        return sequence<MovieData>() {
+            while (res.next()) {
+                yield(MovieData(
+                    name = res.getNString(1),
+                    genre = res.getNString(2),
+                    description = res.getNString(3),
+                    year = res.getInt(4),
+                    tags = listOf()
+                ))
+
+            }
+        }.toList()
+    }
 
     return movies.filter {
-        ((genre=="NO_genre" || it.genre.lowercase(Locale.getDefault())==genre.lowercase(Locale.getDefault()))
+        ((it.genre.lowercase(Locale.getDefault())==genre.lowercase(Locale.getDefault()))
           && (!includeAllTags || it.tags.containsAll(tagList))
           && (includeAllTags || tagList.isEmpty() || it.tags.any{ tag -> tagList.contains(tag)})
           && (nameRegex==null || nameRegex.matches(it.name.lowercase(Locale.getDefault())))
         )
     }
 }
+
