@@ -1,6 +1,7 @@
 package lab34
 
 import dev.inmo.tgbotapi.extensions.api.send.reply
+import dev.inmo.tgbotapi.extensions.api.send.sendTextMessage
 import dev.inmo.tgbotapi.extensions.api.telegramBot
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
 import dev.inmo.tgbotapi.extensions.behaviour_builder.buildBehaviourWithLongPolling
@@ -23,7 +24,7 @@ private class ReplyBars {
     companion object {
         // pops up on start and after finishing command execution
         val DEFAULT = replyKeyboard(resizeKeyboard = true, oneTimeKeyboard = true) {
-            row(simpleReplyButton("/searchByGenre"), simpleReplyButton("/searchByName"))
+            row(simpleReplyButton("/genreAndTags"), simpleReplyButton("/keywords"))
         }
 
         // just a single, lonely "any" button
@@ -49,7 +50,11 @@ private suspend fun BehaviourContext.replyWithMovieList(movies: List<MovieData>,
 
             itr++
 
-            textReply.append("$itr. ${movie.name}\n${movie.description}\n\n")
+            textReply.append("$itr. ${movie.name} (${movie.year})\n")
+            for (tag in movie.tags)
+                textReply.append("$tag,")
+
+            textReply.append("\n${movie.description}\n")
         }
     }
     else
@@ -66,8 +71,13 @@ private suspend fun BehaviourContext.getGenre(
     var genre = args.firstOrNull()
     if (genre == null){
         genre=waitText(SendTextMessage(message.chat.id,
-            "Alright, which genre do you prefer? Take note that imho each movie can belong to one and only one genre. And its definitely not because im lazy"))
+            "Alright, which genre do you prefer? Take note that imho each movie can belong to one and only one genre. And its definitely not because im lazy. BTW you can type ANY if you have no preferences.",
+            replyMarkup = ReplyBars.ANY_SINGLE))
             .first().text
+
+        if (genre.lowercase()=="any")
+            genre="NO_GENRE"
+
     }
     return genre
 }
@@ -106,18 +116,22 @@ suspend fun initBot(connection: Connection, token: String){
             reply(it, "this bot isnt working. Or is it? It sent a reply after all", replyMarkup = ReplyBars.DEFAULT)
         }
 
-        onCommandWithArgs("searchByGenre") {message, args ->
+        onCommandWithArgs("genreAndTags") {message, args ->
             val genre = getGenre(message, args)
 
-            val allTagsBox = GenericBox<Boolean>(true)
+            val allTagsBox = GenericBox<Boolean>(false)
             val tags = getTags(message, allTagsBox)
 
-            val res= searchMovies(connection, genre, tags, allTagsBox.value)
+            if (tags.isEmpty() && genre=="NO_GENRE")
+                sendTextMessage(message.chat.id, "Can you be more specific next time? thanx.")
+            else {
+                val res = searchMovies(connection, genre, tags, allTagsBox.value)
 
-            replyWithMovieList(res,message)
+                replyWithMovieList(res, message)
+            }
         }
 
-        onCommandWithArgs("searchByName") {message, args ->
+        onCommandWithArgs("keywords") {message, args ->
             val wordsToSearch : List<String> = if (args.isEmpty()) {
                 waitText(SendTextMessage(message.chat.id, "Now tell me name of the movie you would like to search for. " +
                         "Take note, im not as smart as google-san or yandex-chan, i wont recognize typos and such stuff.")
@@ -125,13 +139,7 @@ suspend fun initBot(connection: Connection, token: String){
             } else
                 args.toList()
 
-            val sb = StringBuilder()
-            wordsToSearch.forEach{sb.append(".*${it.lowercase(Locale.getDefault())}")}     // might be a better idea to use ANY symbol as delimiter instead of spaces only
-            sb.append(".*")
-
-            val nameRegex = Regex(sb.toString())
-
-            val res = searchMovies(connection, nameRegex=nameRegex)
+            val res = searchMovies(connection, nameKeywords = wordsToSearch.map{it.lowercase()})
             replyWithMovieList(res,message)
         }
 

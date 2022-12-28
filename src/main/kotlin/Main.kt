@@ -7,10 +7,10 @@ suspend fun main() {
 
     val connection =
     DriverManager.getConnection(
-        "jdbc:sqlserver://127.0.0.1:1434;database=kotel;encrypt=false;",
+        "jdbc:sqlserver://192.168.0.33:1433;database=kotel;encrypt=false;",
         "salo",
         "admin"
     )
 
-    initBot(connection, "")
+    initBot(connection, readln())
 }
